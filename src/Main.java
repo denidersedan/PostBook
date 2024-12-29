@@ -11,7 +11,7 @@ public class Main {
 //        LogInView view = new LogInView();
 //        LogInController logInController = new LogInController(model, view);
         User account = new User("deni", "password", "Deni Dersedan");
-        MainView view = new MainView();
+        MainView view = new MainView(account);
         MainController ctrl = new MainController(account, view);
     }
 }

@@ -1,10 +1,10 @@
 package views;
 
 import controllers.AccountController;
-import controllers.FriendsController;
 import database.User;
 
 import javax.swing.*;
+import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
@@ -12,6 +12,8 @@ public class MainView extends JFrame {
     private final ImageIcon image = new ImageIcon("C:\\Users\\Denisa\\Downloads\\postbook-high-resolution-logo (2).png");
     private final Image scaledImage = image.getImage().getScaledInstance(250, 100, Image.SCALE_SMOOTH);
     private final JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
+    private CardLayout cardLayout;
+    private JPanel contentPanel;
 
     private JTextField searchField = new JTextField(20);
     JTextField postTextField = new JTextField(30);
@@ -23,7 +25,7 @@ public class MainView extends JFrame {
     JMenu accountMenu = new JMenu("My Account");
     JMenu searchMenu = new JMenu("Search:");
 
-    public MainView() {
+    public MainView(User account) {
         // Set up the main frame
         setTitle("PostBook");
         setSize(800, 800);
@@ -65,13 +67,37 @@ public class MainView extends JFrame {
         add(topPanel, gbc);
 
         // Content section
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel = new JPanel();
+        cardLayout = new CardLayout();
+        contentPanel.setLayout(cardLayout);
 
-        // "Create Post" section
+        JPanel homePanel = createHomePageView();
+
+        AccountView accountView = new AccountView();
+        AccountController accountController = new AccountController(account, accountView);
+        contentPanel.add(homePanel, "Home");
+        contentPanel.add(accountView, "Account");
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        add(contentPanel, gbc);
+
+        setVisible(true);
+    }
+
+    private JPanel createHomePageView() {
+        // Main panel for the home page
+        JPanel homePage = new JPanel();
+        homePage.setLayout(new BoxLayout(homePage, BoxLayout.Y_AXIS));
+
+        // Create Post panel at the top
         JPanel createPostPanel = new JPanel(new GridBagLayout());
         createPostPanel.setBorder(BorderFactory.createTitledBorder("Create Post"));
 
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
@@ -82,27 +108,25 @@ public class MainView extends JFrame {
         gbc.gridwidth = 1;
         createPostPanel.add(postButton, gbc);
 
-        createPostPanel.setPreferredSize(new Dimension(getWidth(), 2));  // Set preferred height to 150px
-        contentPanel.add(createPostPanel);
+        createPostPanel.setPreferredSize(new Dimension(getWidth(), 2));
+        homePage.add(createPostPanel);
 
-//        Box.Filler filler = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(0, Integer.MAX_VALUE));
-//        contentPanel.add(filler);  // Add flexible space between "Create Post" and "Posts"
-
-        // "Posts" section
+        // Posts panel below the Create Post panel
         JPanel postsPanel = new JPanel(new GridBagLayout());
         postsPanel.setBorder(BorderFactory.createTitledBorder("Posts"));
 
-        postsPanel.setPreferredSize(new Dimension(getWidth(), 400));  // Set preferred height to 400px
-        contentPanel.add(postsPanel);
+        postsPanel.setPreferredSize(new Dimension(getWidth(), 400));
+        homePage.add(postsPanel);
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        add(contentPanel, gbc);
+        return homePage;
+    }
 
-        setVisible(true);
+    public CardLayout getCardLayout() {
+        return cardLayout;
+    }
+
+    public JPanel getContentPanel() {
+        return contentPanel;
     }
 
     public String getPostText() {
@@ -117,15 +141,15 @@ public class MainView extends JFrame {
         return searchField.getText();
     }
 
-    public void setSearchMenuActionListener(ActionListener actionListener) {
-        searchMenu.addActionListener(actionListener);
+    public void setSearchMenuListener(MenuListener menuListener) {
+        searchMenu.addMenuListener(menuListener);
     }
 
-    public void setAccountMenuActionListener(ActionListener actionListener) {
-        accountMenu.addActionListener(actionListener);
+    public void setAccountMenuListener(MenuListener menuListener) {
+        accountMenu.addMenuListener(menuListener);
     }
 
-    public void setFriendsMenuActionListener(ActionListener actionListener) {
-        friendsMenu.addActionListener(actionListener);
+    public void setFriendsMenuListener(MenuListener menuListener) {
+        friendsMenu.addMenuListener(menuListener);
     }
 }

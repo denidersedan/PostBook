@@ -42,7 +42,7 @@ public class LogInController {
                 account.setId(userId);
             }
             if(account != null){
-                MainView mainView = new MainView();
+                MainView mainView = new MainView(account);
                 MainController mainController = new MainController(account, mainView);
                 view.dispose();
             }

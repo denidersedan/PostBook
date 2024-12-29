@@ -1,13 +1,11 @@
 package controllers;
 
 import database.User;
-import models.AccountModel;
 import models.MainModel;
-import views.AccountView;
 import views.MainView;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 public class MainController {
 
@@ -20,16 +18,20 @@ public class MainController {
         this.view = view;
         this.account = account;
 
-        view.setAccountMenuActionListener(new AccountMenuActionListener());
-
+        view.setAccountMenuListener(new AccountMenuListener());
         view.setVisible(true);
     }
 
-    private class AccountMenuActionListener implements ActionListener{
+    private class AccountMenuListener implements MenuListener {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            AccountView accountView = new AccountView();
-            AccountController accountController = new AccountController(account, accountView);
+        public void menuSelected(MenuEvent e) {
+            view.getCardLayout().show(view.getContentPanel(), "Account");
         }
+
+        @Override
+        public void menuDeselected(MenuEvent e) {}
+
+        @Override
+        public void menuCanceled(MenuEvent e) {}
     }
 }

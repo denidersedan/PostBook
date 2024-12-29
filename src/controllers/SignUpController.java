@@ -31,7 +31,7 @@ public class SignUpController {
                             DBConnection.insertUser(view.getUsername(), view.getPassword1(), view.getUsername());
                             User account = new User(view.getUsername(), view.getPassword1(), view.getFullName());
 
-                            MainView mainView = new MainView();
+                            MainView mainView = new MainView(account);
                             MainController mainController = new MainController(account, mainView);
                             mainView.dispose();
                         } else{
