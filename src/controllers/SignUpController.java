@@ -2,8 +2,10 @@ package controllers;
 
 import database.DBConnection;
 import database.User;
+import models.LogInModel;
 import models.MainModel;
 import models.SignUpModel;
+import views.LogInView;
 import views.MainView;
 import views.SignUpView;
 
@@ -17,8 +19,20 @@ public class SignUpController {
     public SignUpController(SignUpModel model, SignUpView view){
         this.model =model;
         this.view =view;
-        this.view.setSignUpButtonActionListener(new SignUpListener());
-        this.view.setVisible(true);
+
+        view.setSignUpButtonActionListener(new SignUpListener());
+        view.setLogInButtonActionListener(new LogInListener());
+        view.setVisible(true);
+    }
+
+    private class LogInListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            LogInView logInView = new LogInView();
+            LogInModel logInModel = new LogInModel();
+            LogInController logInController = new LogInController(logInModel, logInView);
+            view.dispose();
+        }
     }
 
     private class SignUpListener implements ActionListener {

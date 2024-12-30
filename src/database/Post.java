@@ -45,4 +45,9 @@ public class Post {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        return text + "posted on " + date + "\n";
+    }
 }

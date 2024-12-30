@@ -1,46 +1,56 @@
 package views;
 
 import controllers.AccountController;
+import controllers.FriendsController;
+import controllers.HomeController;
+import controllers.SearchController;
 import database.User;
+import models.HomeModel;
+import models.SearchModel;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class MainView extends JFrame {
-    private final ImageIcon image = new ImageIcon("C:\\Users\\Denisa\\Downloads\\postbook-high-resolution-logo (2).png");
+    private final ImageIcon image = new ImageIcon("C:\\Users\\Denisa\\Downloads\\postbook-high-resolution-logo (3).png");
     private final Image scaledImage = image.getImage().getScaledInstance(250, 100, Image.SCALE_SMOOTH);
     private final JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
     private JTextField searchField = new JTextField(20);
-    JTextField postTextField = new JTextField(30);
-    JButton postButton = new JButton("Post");
+    private JTextField postTextField = new JTextField(30);
+    private JButton postButton = new JButton("Post");
 
-    JMenuBar menuBar = new JMenuBar();
-    JMenu homeMenu = new JMenu("Home");
-    JMenu friendsMenu = new JMenu("Friends");
-    JMenu accountMenu = new JMenu("My Account");
-    JMenu searchMenu = new JMenu("Search:");
+    private JMenuBar menuBar = new JMenuBar();
+    private JMenu homeMenu = new JMenu("Home");
+    private JMenu friendsMenu = new JMenu("Friends");
+    private JMenu accountMenu = new JMenu("My Account");
+    private JLabel searchMenu = new JLabel("Search:");
 
     public MainView(User account) {
         // Set up the main frame
         setTitle("PostBook");
         setSize(800, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setBackground(new Color(219, 239, 237));
+        getContentPane().setBackground(new Color(245, 245, 245));
 
-        setLayout(new GridBagLayout()); // Use GridBagLayout for precise layout control
+        setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10); // Add padding between components
+        gbc.insets = new Insets(10, 10, 10, 10);
 
         // Top panel with logo and menu
         JPanel topPanel = new JPanel(new GridBagLayout());
-        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        topPanel.setBackground(new Color(219, 239, 237));
+        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(200, 200, 200)));
+        topPanel.setBackground(Color.WHITE);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -48,10 +58,15 @@ public class MainView extends JFrame {
         topPanel.add(logoLabel, gbc);
 
         // Menu bar with search field
+        menuBar.setBackground(Color.WHITE);
+        menuBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         menuBar.add(homeMenu);
         menuBar.add(friendsMenu);
         menuBar.add(accountMenu);
         menuBar.add(searchMenu);
+
+        searchField.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+        searchField.setPreferredSize(new Dimension(200, 30));
         menuBar.add(searchField);
 
         gbc.gridx = 1;
@@ -71,12 +86,25 @@ public class MainView extends JFrame {
         cardLayout = new CardLayout();
         contentPanel.setLayout(cardLayout);
 
-        JPanel homePanel = createHomePageView();
+        HomeView homeView = new HomeView();
+        HomeController homeController = new HomeController(account, homeView);
 
         AccountView accountView = new AccountView();
         AccountController accountController = new AccountController(account, accountView);
-        contentPanel.add(homePanel, "Home");
+
+        FriendsView friendsView = new FriendsView();
+        FriendsController friendsController = new FriendsController(account, friendsView);
+
+        SearchView searchView = new SearchView();
+        SearchModel searchModel = new SearchModel();
+        SearchController searchController = new SearchController(searchModel, searchView, searchField);
+
+        contentPanel.add(homeView, "Home");
         contentPanel.add(accountView, "Account");
+        contentPanel.add(friendsView, "Friends");
+        contentPanel.add(searchView, "Search");
+
+        contentPanel.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -88,39 +116,6 @@ public class MainView extends JFrame {
         setVisible(true);
     }
 
-    private JPanel createHomePageView() {
-        // Main panel for the home page
-        JPanel homePage = new JPanel();
-        homePage.setLayout(new BoxLayout(homePage, BoxLayout.Y_AXIS));
-
-        // Create Post panel at the top
-        JPanel createPostPanel = new JPanel(new GridBagLayout());
-        createPostPanel.setBorder(BorderFactory.createTitledBorder("Create Post"));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        createPostPanel.add(postTextField, gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        createPostPanel.add(postButton, gbc);
-
-        createPostPanel.setPreferredSize(new Dimension(getWidth(), 2));
-        homePage.add(createPostPanel);
-
-        // Posts panel below the Create Post panel
-        JPanel postsPanel = new JPanel(new GridBagLayout());
-        postsPanel.setBorder(BorderFactory.createTitledBorder("Posts"));
-
-        postsPanel.setPreferredSize(new Dimension(getWidth(), 400));
-        homePage.add(postsPanel);
-
-        return homePage;
-    }
-
     public CardLayout getCardLayout() {
         return cardLayout;
     }
@@ -129,20 +124,28 @@ public class MainView extends JFrame {
         return contentPanel;
     }
 
-    public String getPostText() {
-        return postTextField.getText();
+    public JMenu getHomeMenu() {
+        return homeMenu;
     }
 
-    public void setPostButtonActionListener(ActionListener actionListener) {
-        postButton.addActionListener(actionListener);
+    public JMenu getAccountMenu() {
+        return accountMenu;
     }
 
-    public String getSearchText() {
-        return searchField.getText();
+    public JMenu getFriendsMenu() {
+        return friendsMenu;
     }
 
-    public void setSearchMenuListener(MenuListener menuListener) {
-        searchMenu.addMenuListener(menuListener);
+    public void setContentPanelMouseListener(MouseAdapter mouseAdapter) {
+        contentPanel.addMouseListener(mouseAdapter);
+    }
+
+    public void setHomeMenuListener(MenuListener menuListener) {
+        homeMenu.addMenuListener(menuListener);
+    }
+
+    public void setSearchFieldActionListener(ActionListener actionListener) {
+        searchField.addActionListener(actionListener);
     }
 
     public void setAccountMenuListener(MenuListener menuListener) {

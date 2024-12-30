@@ -30,6 +30,7 @@ public class LogInController {
             SignUpModel signUpModel = new SignUpModel();
             SignUpView signUpView = new SignUpView();
             SignUpController signUpController = new SignUpController(signUpModel, signUpView);
+            view.dispose();
         }
     }
 
@@ -37,17 +38,17 @@ public class LogInController {
         @Override
         public void actionPerformed(ActionEvent e) {
             User account = model.checkUsernamePassword(view.getUsername(), view.getPassword());
-            int userId = DBConnection.getUserIdByUsername(account.getUsername());
-            if(userId != -1){
-                account.setId(userId);
-            }
             if(account != null){
+                int userId = DBConnection.getUserIdByUsername(account.getUsername());
+                if(userId != -1){
+                    account.setId(userId);
+                }
                 MainView mainView = new MainView(account);
                 MainController mainController = new MainController(account, mainView);
                 view.dispose();
             }
             else{
-                view.setMessageVisible();
+                view.setMessageVisible(true);
             }
         }
     }

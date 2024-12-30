@@ -73,21 +73,6 @@ public class DBConnection {
         }
         return false;
     }
-    public static User getUserById(int id) {
-        String query = "SELECT * FROM users WHERE id = ?";
-        try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement pst = connection.prepareStatement(query)) {
-            pst.setString(1, Integer.toString(id));
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                User user = new User(rs.getString("username"), rs.getString("password"), rs.getString("name"));
-                return user;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
     public static List<User> getUsers() {
         try(Connection connection = DriverManager.getConnection(url, user, password)) {
             System.out.println("Connected to database!");
@@ -113,31 +98,55 @@ public class DBConnection {
         }
         return List.of();
     }
-    public static List<Post> getPosts() {
-        try(Connection connection = DriverManager.getConnection(url, user, password)) {
+    public static List<Post> getFriendsPosts(int loggedInUserId) {
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
             System.out.println("Connected to database!");
 
-            Statement statement = connection.createStatement();
+            // Create the SQL query to select posts from the friends of the logged-in user
+            String query = "SELECT p.* FROM \"posts\" p " +
+                    "JOIN \"friendships\" f ON (f.user1_id = p.user_id OR f.user2_id = p.user_id) " +
+                    "WHERE (f.user1_id = ? OR f.user2_id = ?) AND p.user_id != ? " +
+                    "ORDER BY p.post_date DESC";
 
-            String query = "SELECT * FROM \"posts\"";
-            ResultSet resultSet = statement.executeQuery(query);
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, loggedInUserId);
+                statement.setInt(2, loggedInUserId);
+                statement.setInt(3, loggedInUserId);
 
-            List<Post> posts = new ArrayList<>();
-            while (resultSet.next()) {
-                Post post = new Post(
-                        resultSet.getInt("user_id"),
-                        resultSet.getString("post_text"),
-                        resultSet.getDate("post_date")
-                );
-                post.setUserById(resultSet.getInt("user_id"));
-                posts.add(post);
+                ResultSet resultSet = statement.executeQuery();
+
+                List<Post> posts = new ArrayList<>();
+                while (resultSet.next()) {
+                    Post post = new Post(
+                            resultSet.getInt("user_id"),
+                            resultSet.getString("post_text"),
+                            resultSet.getDate("post_date")
+                    );
+                    post.setUserById(resultSet.getInt("user_id"));
+                    posts.add(post);
+
+                }
+                return posts;
             }
-            return posts;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return List.of();
+    }
+    public static User getUserById(int id) {
+        String query = "SELECT * FROM users WHERE id = ?";
+        try (Connection connection = DriverManager.getConnection(url, user, password);
+             PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setInt(1, id);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                User user = new User(rs.getString("username"), rs.getString("password"), rs.getString("name"));
+                return user;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     public static int getUserIdByUsername(String username) {
         String query = "SELECT id FROM users WHERE username = ?";
@@ -210,6 +219,21 @@ public class DBConnection {
              PreparedStatement pst = connection.prepareStatement(query)) {
             pst.setInt(1, userId);
             pst.setInt(2, friendId);
+            pst.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public static boolean insertPost(int userId, String postText) {
+        // SQL query to insert a new post
+        String query = "INSERT INTO posts (user_id, post_text, post_date) VALUES (?, ?, NOW())";
+        try (Connection connection = DriverManager.getConnection(url, user, password);
+             PreparedStatement pst = connection.prepareStatement(query)) {
+            pst.setInt(1, userId);
+            pst.setString(2, postText);
+
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {
